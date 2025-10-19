@@ -1,0 +1,56 @@
+# Java / Maven
+
+# Maven target directories
+/target/
+**/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Keep the Maven wrapper jar committed
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Compiled class files
+*.class
+
+# Logs
+*.log
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# STS / Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+.loadpath
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional: keep README/HELP tracked (do not ignore HELP.md)
+# (If you intentionally wanted HELP.md ignored, let me know and I will add it back.)
