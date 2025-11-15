@@ -2,8 +2,12 @@ package com.begoho.selfteaching.engine.controller;
 
 
 import com.begoho.selfteaching.engine.dto.FileStructureRequest;
+import com.begoho.selfteaching.engine.validator.FileStructureValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/v1/file-structure")
@@ -12,17 +16,21 @@ public class FileStructureController {
   //  private final CodeValidationService validationService;
   //  private final CodeGenerationService generationService;
 
+    private final FileStructureValidator validator;
+
+    public FileStructureController(FileStructureValidator validator) {
+        this.validator = validator;
+    }
 
 
     @PostMapping("/generate")
     public ResponseEntity<?> validateAndGenerate(@RequestBody FileStructureRequest request) {
-        //ValidationResult validation = validationService.validate(request);
-       /* if (!validation.acceptable()) {
-            return ResponseEntity.badRequest().body(validation);
-        }*/
+        Optional<String> validationError = validator.validate(request);
+        if (validationError.isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("error", validationError.get()));
+        }
 
-        /*String generatedSource = generationService.generate(request);
-        GenerateResponse response = new GenerateResponse(true, validation.messages(), generatedSource);*/
+        // proceed with generation logic
         return ResponseEntity.ok("response");
     }
 
