@@ -86,7 +86,8 @@ public class FileStructureValidator {
             }
 
             String expected = publicClassName.get() + ".java";
-            if (!fileName.equals(expected)) {
+            String expectedWithoutJava = publicClassName.get();
+            if (!fileName.equals(expected) && !fileName.equals(expectedWithoutJava)) {
                 return Optional.of("When a public class is present, `fileName` must match the public class name. Expected: '" + expected + "' but was '" + fileName + "'");
             }
         }
