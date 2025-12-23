@@ -4,7 +4,7 @@ public class ClassStructure {
 
     private String accessModifier;
     private String className;
-    private boolean isMain; // new field to indicate whether the class contains a main method
+    private Boolean isMain; // Use Boolean wrapper to handle null and string mapping
 
     public ClassStructure() {
     }
@@ -15,7 +15,7 @@ public class ClassStructure {
     }
 
     // New constructor including isMain
-    public ClassStructure(String accessModifier, String className, boolean isMain) {
+    public ClassStructure(String accessModifier, String className, Boolean isMain) {
         this.accessModifier = accessModifier;
         this.className = className;
         this.isMain = isMain;
@@ -37,12 +37,11 @@ public class ClassStructure {
         this.className = className;
     }
 
-    // Getter follows JavaBean convention for boolean: isX()
-    public boolean isMain() {
+    public Boolean isMain() {
         return isMain;
     }
 
-    public void setMain(boolean main) {
-        isMain = main;
+    public void setIsMain(Boolean isMain) {
+        this.isMain = isMain;
     }
 }
