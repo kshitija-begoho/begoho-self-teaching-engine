@@ -2,6 +2,7 @@ package com.begoho.selfteaching.engine.controller;
 
 
 import com.begoho.selfteaching.engine.dto.FileStructureRequest;
+import com.begoho.selfteaching.engine.dto.GenerationResponse;
 import com.begoho.selfteaching.engine.service.CodeGenerationService;
 import com.begoho.selfteaching.engine.validator.FileStructureValidator;
 import org.springframework.http.ResponseEntity;
@@ -27,20 +28,19 @@ public class FileStructureController {
 
 
     @PostMapping("/generate")
-    public ResponseEntity<?> validateAndGenerate(@RequestBody FileStructureRequest request) throws IOException {
+    public ResponseEntity<?> validateAndGenerate(@RequestBody FileStructureRequest request) {
         Optional<String> validationError = validator.validate(request);
         if (validationError.isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", validationError.get()));
         }
 
-        // proceed with generation logic
         try {
-            generationService.generateJavaFiles(request);
+            GenerationResponse response = generationService.generateJavaFile(request);
+            return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to generate Java files: " + e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Failed to generate Java file: " + e.getMessage()));
         }
-
-        return ResponseEntity.ok("response");
     }
 
    /* @PostMapping("/validate")
