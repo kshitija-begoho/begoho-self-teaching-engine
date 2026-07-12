@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Component
 public class FileStructureValidator {
@@ -18,6 +19,18 @@ public class FileStructureValidator {
             "",
             "default",
             "package-private"
+    );
+    private static final Pattern JAVA_IDENTIFIER = Pattern.compile("[A-Za-z_$][A-Za-z\\d_$]*");
+    private static final Set<String> JAVA_KEYWORDS = Set.of(
+            "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
+            "class", "const", "continue", "default", "do", "double", "else", "enum",
+            "extends", "final", "finally", "float", "for", "goto", "if", "implements",
+            "import", "instanceof", "int", "interface", "long", "native", "new", "package",
+            "private", "protected", "public", "return", "short", "static", "strictfp",
+            "super", "switch", "synchronized", "this", "throw", "throws", "transient",
+            "try", "void", "volatile", "while", "true", "false", "null", "_",
+            "module", "open", "requires", "transitive", "exports", "opens", "to",
+            "uses", "provides", "with", "record", "sealed", "permits"
     );
 
     /**
@@ -31,6 +44,17 @@ public class FileStructureValidator {
 
         if (request.getStructures() == null) {
             return Optional.of("`structures` list is required");
+        }
+        if (request.getStructures().isEmpty()) {
+            return Optional.of("At least one class structure is required");
+        }
+
+        String fileName = request.getFileName();
+        if (fileName == null || fileName.isBlank()) {
+            return Optional.of("`fileName` is required");
+        }
+        if (!isSafeJavaFileName(fileName)) {
+            return Optional.of("`fileName` must be a Java identifier (optionally ending in .java) and must not include any path separators");
         }
 
         // Validate access modifiers for each structure
@@ -52,6 +76,8 @@ public class FileStructureValidator {
             String className = s.getClassName();
             if (className == null || className.isBlank()) {
                 invalidEntries.add("structures[" + i + "].className is required and must be non-empty");
+            } else if (!JAVA_IDENTIFIER.matcher(className).matches() || JAVA_KEYWORDS.contains(className)) {
+                invalidEntries.add("structures[" + i + "].className='" + className + "' is not a valid Java identifier");
             }
         }
 
@@ -61,7 +87,8 @@ public class FileStructureValidator {
         }
 
         long publicCount = request.getStructures().stream()
-                .filter(s -> s != null && "public".equalsIgnoreCase(s.getAccessModifier()))
+                .filter(s -> s != null && "public".equalsIgnoreCase(
+                        s.getAccessModifier() == null ? "" : s.getAccessModifier().trim()))
                 .count();
 
         if (publicCount > 1) {
@@ -70,13 +97,9 @@ public class FileStructureValidator {
 
         // If there is exactly one public class, ensure filename matches <ClassName>.java
         if (publicCount == 1) {
-            String fileName = request.getFileName();
-            if (fileName == null || fileName.isBlank()) {
-                return Optional.of("`fileName` is required when a public class is present and must match the class name (e.g. MyClass.java)");
-            }
-
             Optional<String> publicClassName = request.getStructures().stream()
-                    .filter(s -> s != null && "public".equalsIgnoreCase(s.getAccessModifier()))
+                    .filter(s -> s != null && "public".equalsIgnoreCase(
+                            s.getAccessModifier() == null ? "" : s.getAccessModifier().trim()))
                     .map(ClassStructure::getClassName)
                     .filter(n -> n != null && !n.isBlank())
                     .findFirst();
@@ -93,5 +116,13 @@ public class FileStructureValidator {
         }
 
         return Optional.empty();
+    }
+
+    private boolean isSafeJavaFileName(String fileName) {
+        String baseName = fileName.endsWith(".java")
+                ? fileName.substring(0, fileName.length() - ".java".length())
+                : fileName;
+        return JAVA_IDENTIFIER.matcher(baseName).matches()
+                && !JAVA_KEYWORDS.contains(baseName);
     }
 }

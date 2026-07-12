@@ -2,73 +2,61 @@ package com.begoho.selfteaching.engine.service;
 
 import com.begoho.selfteaching.engine.dto.ClassStructure;
 import com.begoho.selfteaching.engine.dto.FileStructureRequest;
+import com.begoho.selfteaching.engine.dto.GenerationResponse;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Service
 public class CodeGenerationService {
 
-    public void generateJavaFiles(FileStructureRequest request) throws IOException {
-        String directoryPath = "generated-files/";
-        File directory = new File(directoryPath);
-        if (!directory.mkdirs() && !directory.exists()) {
-            throw new IOException("Failed to create directory: " + directoryPath);
-        }
+    private static final String LESSON =
+            "A Java source file can contain multiple top-level classes, but only one can be public. "
+                    + "When a public class exists, the file name must match that class.";
+    private final Path outputDirectory;
 
-        List<ClassStructure> structures = request.getStructures();
-        String fileName = request.getFileName();
-        if(!request.getFileName().endsWith(".java")) {
-            fileName += ".java";
-        }
+    public CodeGenerationService() {
+        this(Path.of("generated-files"));
+    }
+
+    CodeGenerationService(Path outputDirectory) {
+        this.outputDirectory = outputDirectory.toAbsolutePath().normalize();
+    }
+
+    public GenerationResponse generateJavaFile(FileStructureRequest request) throws IOException {
+        Files.createDirectories(outputDirectory);
+
+        String fileName = resolveFileName(request);
         StringBuilder builder = new StringBuilder();
-        for (ClassStructure structure : structures) {
-            if(structure.getAccessModifier().equalsIgnoreCase("public")) {
-                fileName = structure.getClassName() + ".java";
-            }
-
-             builder.append
-                    (generateClassContent(structure));
-
-            generateJavaFile(directoryPath, builder,fileName);
+        for (ClassStructure structure : request.getStructures()) {
+            builder.append(generateClassContent(structure));
         }
-    }
 
-    private void generateJavaFile(String directoryPath, StringBuilder builder, String fileName) {
-        File javaFile = new File(directoryPath, fileName);
-        try (FileWriter writer = new FileWriter(javaFile)) {
-            writer.write(builder.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
+        Path outputFile = outputDirectory.resolve(fileName).normalize();
+        if (!outputFile.getParent().equals(outputDirectory)) {
+            throw new IOException("Invalid output file name");
         }
-    }
 
-    private void generateJavaFile(String directoryPath, ClassStructure structure) throws IOException {
-
-        String fileName = structure.getClassName() + ".java";
-        File javaFile = new File(directoryPath, fileName);
-        try (FileWriter writer = new FileWriter(javaFile)) {
-            writer.write(generateClassContent(structure));
-        }
+        String generatedCode = builder.toString();
+        Files.writeString(outputFile, generatedCode, StandardCharsets.UTF_8);
+        return new GenerationResponse(true, fileName, generatedCode, LESSON);
     }
 
     private String generateClassContent(ClassStructure structure) {
         StringBuilder classContent = new StringBuilder();
 
-        // Add package declaration if needed
-        // classContent.append("package ...;").append(System.lineSeparator());
-
-        // Add class declaration
-        if (!structure.getAccessModifier().isEmpty() && !structure.getAccessModifier().equalsIgnoreCase("default")) {
-            classContent.append(structure.getAccessModifier()).append(" ");
+        String modifier = structure.getAccessModifier() == null
+                ? ""
+                : structure.getAccessModifier().trim();
+        if (modifier.equalsIgnoreCase("public")) {
+            classContent.append("public ");
         }
         classContent.append("class ").append(structure.getClassName()).append(" {").append(System.lineSeparator());
 
-        // Add main method if isMain is true
-        if (structure.isMain()) {
+        if (Boolean.TRUE.equals(structure.isMain())) {
             classContent.append("    public static void main(String[] args) {").append(System.lineSeparator());
             classContent.append("        System.out.println(\"Hello from ").append(structure.getClassName()).append("!\");").append(System.lineSeparator());
             classContent.append("    }").append(System.lineSeparator());
@@ -76,5 +64,16 @@ public class CodeGenerationService {
 
         classContent.append("}").append(System.lineSeparator());
         return classContent.toString();
+    }
+
+    private String resolveFileName(FileStructureRequest request) {
+        return request.getStructures().stream()
+                .filter(structure -> "public".equalsIgnoreCase(
+                        structure.getAccessModifier() == null ? "" : structure.getAccessModifier().trim()))
+                .findFirst()
+                .map(structure -> structure.getClassName() + ".java")
+                .orElseGet(() -> request.getFileName().endsWith(".java")
+                        ? request.getFileName()
+                        : request.getFileName() + ".java");
     }
 }

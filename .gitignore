@@ -54,3 +54,6 @@ Thumbs.db
 
 # Optional: keep README/HELP tracked (do not ignore HELP.md)
 # (If you intentionally wanted HELP.md ignored, let me know and I will add it back.)
+
+# Generated app output
+/generated-files/

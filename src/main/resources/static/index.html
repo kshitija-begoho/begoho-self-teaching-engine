@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BeGoHo Learning Engine</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="/">BeGoHo</a>
+    <span>Java Learning Engine</span>
+</header>
+
+<main>
+    <section class="hero">
+        <p class="eyebrow">Lesson 01</p>
+        <h1>Build a Java source file</h1>
+        <p>Explore how top-level classes, access modifiers, file names, and main methods work together.</p>
+    </section>
+
+    <div class="workspace">
+        <section class="panel builder-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Your structure</p>
+                    <h2>Class builder</h2>
+                </div>
+                <button id="add-class" class="button secondary" type="button">+ Add class</button>
+            </div>
+
+            <form id="class-form">
+                <label class="field file-field">
+                    <span>Java file name</span>
+                    <input id="file-name" name="fileName" value="First.java" autocomplete="off" required>
+                    <small>Must match the public class name.</small>
+                </label>
+
+                <div id="class-list" class="class-list"></div>
+
+                <div id="message" class="message" role="status" aria-live="polite"></div>
+                <button class="button primary" type="submit">Generate Java file</button>
+            </form>
+        </section>
+
+        <section class="panel preview-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Live result</p>
+                    <h2 id="preview-name">First.java</h2>
+                </div>
+                <span class="status-dot">Preview</span>
+            </div>
+            <pre><code id="code-preview"></code></pre>
+        </section>
+    </div>
+
+    <section class="lesson">
+        <p class="eyebrow">Why this matters</p>
+        <h2>One public class sets the file name</h2>
+        <p id="lesson-text">
+            A Java source file can contain multiple top-level classes, but only one can be public.
+            When a public class exists, the file name must match that class.
+        </p>
+    </section>
+</main>
+
+<template id="class-template">
+    <fieldset class="class-card">
+        <div class="class-card-heading">
+            <legend>Class <span class="class-number"></span></legend>
+            <button class="remove-class" type="button" aria-label="Remove class">Remove</button>
+        </div>
+        <div class="class-fields">
+            <label class="field">
+                <span>Access</span>
+                <select class="access-modifier">
+                    <option value="public">public</option>
+                    <option value="default">package-private</option>
+                </select>
+            </label>
+            <label class="field">
+                <span>Class name</span>
+                <input class="class-name" autocomplete="off" required>
+            </label>
+            <label class="checkbox-field">
+                <input class="has-main" type="checkbox">
+                <span>Include main method</span>
+            </label>
+        </div>
+    </fieldset>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>
