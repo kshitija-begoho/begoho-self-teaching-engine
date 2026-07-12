@@ -54,7 +54,7 @@ public class FileStructureValidator {
             return Optional.of("`fileName` is required");
         }
         if (!isSafeJavaFileName(fileName)) {
-            return Optional.of("`fileName` must be a simple Java file name without folders or special characters");
+            return Optional.of("`fileName` must be a Java identifier (optionally ending in .java) and must not include any path separators");
         }
 
         // Validate access modifiers for each structure
