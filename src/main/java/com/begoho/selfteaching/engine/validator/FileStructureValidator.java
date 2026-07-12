@@ -28,7 +28,9 @@ public class FileStructureValidator {
             "import", "instanceof", "int", "interface", "long", "native", "new", "package",
             "private", "protected", "public", "return", "short", "static", "strictfp",
             "super", "switch", "synchronized", "this", "throw", "throws", "transient",
-            "try", "void", "volatile", "while", "true", "false", "null", "_"
+            "try", "void", "volatile", "while", "true", "false", "null", "_",
+            "module", "open", "requires", "transitive", "exports", "opens", "to",
+            "uses", "provides", "with", "record", "sealed", "permits"
     );
 
     /**
